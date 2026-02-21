@@ -1,22 +1,25 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+// ========================
+// Game State
+// ========================
 const player = {
-  x: 400,
-  y: 300,
-  speed: 4,
-  radius: 15
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  radius: 15,
+  speed: 4
 };
 
 let bullets = [];
 let zombies = [];
 let score = 0;
-let mouse = { x: 0, y: 0 };
 let keys = {};
+let mouse = { x: 0, y: 0 };
 
-// =====================
+// ========================
 // Keyboard Controls
-// =====================
+// ========================
 document.addEventListener("keydown", (e) => {
   keys[e.key.toLowerCase()] = true;
 });
@@ -25,9 +28,9 @@ document.addEventListener("keyup", (e) => {
   keys[e.key.toLowerCase()] = false;
 });
 
-// =====================
+// ========================
 // Mouse Controls
-// =====================
+// ========================
 canvas.addEventListener("mousemove", (e) => {
   const rect = canvas.getBoundingClientRect();
   mouse.x = e.clientX - rect.left;
@@ -39,6 +42,8 @@ canvas.addEventListener("click", () => {
   const dy = mouse.y - player.y;
   const length = Math.hypot(dx, dy);
 
+  if (length === 0) return; // Prevent division by zero
+
   bullets.push({
     x: player.x,
     y: player.y,
@@ -48,17 +53,26 @@ canvas.addEventListener("click", () => {
   });
 });
 
-// =====================
+// ========================
 // Spawn Zombies
-// =====================
+// ========================
 function spawnZombie() {
   const side = Math.floor(Math.random() * 4);
   let x, y;
 
-  if (side === 0) { x = 0; y = Math.random() * canvas.height; }
-  if (side === 1) { x = canvas.width; y = Math.random() * canvas.height; }
-  if (side === 2) { x = Math.random() * canvas.width; y = 0; }
-  if (side === 3) { x = Math.random() * canvas.width; y = canvas.height; }
+  if (side === 0) {
+    x = 0;
+    y = Math.random() * canvas.height;
+  } else if (side === 1) {
+    x = canvas.width;
+    y = Math.random() * canvas.height;
+  } else if (side === 2) {
+    x = Math.random() * canvas.width;
+    y = 0;
+  } else {
+    x = Math.random() * canvas.width;
+    y = canvas.height;
+  }
 
   zombies.push({
     x,
@@ -70,9 +84,9 @@ function spawnZombie() {
 
 setInterval(spawnZombie, 1500);
 
-// =====================
+// ========================
 // Update Logic
-// =====================
+// ========================
 function update() {
   // Player Movement
   if (keys["w"] || keys["arrowup"]) player.y -= player.speed;
@@ -80,27 +94,44 @@ function update() {
   if (keys["a"] || keys["arrowleft"]) player.x -= player.speed;
   if (keys["d"] || keys["arrowright"]) player.x += player.speed;
 
-  // Bullet Movement
-  bullets.forEach((b) => {
+  // Keep player inside canvas
+  player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+  player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+  // Move Bullets
+  bullets.forEach((b, index) => {
     b.x += b.vx;
     b.y += b.vy;
+
+    // Remove off-screen bullets
+    if (
+      b.x < 0 ||
+      b.x > canvas.width ||
+      b.y < 0 ||
+      b.y > canvas.height
+    ) {
+      bullets.splice(index, 1);
+    }
   });
 
-  // Zombie Movement
+  // Move Zombies
   zombies.forEach((z) => {
     const dx = player.x - z.x;
     const dy = player.y - z.y;
     const length = Math.hypot(dx, dy);
-    z.x += (dx / length) * z.speed;
-    z.y += (dy / length) * z.speed;
+
+    if (length !== 0) {
+      z.x += (dx / length) * z.speed;
+      z.y += (dy / length) * z.speed;
+    }
   });
 
   checkCollisions();
 }
 
-// =====================
+// ========================
 // Collision Detection
-// =====================
+// ========================
 function checkCollisions() {
   for (let i = zombies.length - 1; i >= 0; i--) {
     for (let j = bullets.length - 1; j >= 0; j--) {
@@ -118,16 +149,16 @@ function checkCollisions() {
   }
 }
 
-// =====================
+// ========================
 // Render
-// =====================
+// ========================
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Player
   ctx.beginPath();
   ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = "blue";
+  ctx.fillStyle = "#00ffcc";
   ctx.fill();
 
   // Bullets
@@ -148,13 +179,13 @@ function render() {
 
   // Score
   ctx.fillStyle = "white";
-  ctx.font = "20px Arial";
+  ctx.font = "18px Orbitron";
   ctx.fillText("Score: " + score, 20, 30);
 }
 
-// =====================
+// ========================
 // Game Loop
-// =====================
+// ========================
 function gameLoop() {
   update();
   render();
