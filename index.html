@@ -2,20 +2,32 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Zombie Survival</title>
+  <title>Zombie Shooter v3 - Final</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <h1 class="title">🧟 ZOMBIE SURVIVAL</h1>
+  <h1>🧟 ZOMBIE SHOOTER — FINAL PREMIUM</h1>
 
   <div class="game-wrapper">
     <canvas id="game" width="900" height="600"></canvas>
+
+    <div id="overlay">
+      <div class="overlay-content">
+        <h2>GAME OVER</h2>
+        <p id="finalScore"></p>
+        <p>Press ENTER to Restart</p>
+      </div>
+    </div>
   </div>
 
-  <div class="footer">
-    WASD / Arrow Keys to Move • Click to Shoot
+  <div class="ui-bar">
+    <span id="healthUI">HP: 100</span>
+    <span id="ammoUI">Ammo: 0</span>
+    <span id="levelUI">Wave: 1</span>
   </div>
+
+  <button id="premiumBtn">Toggle Premium Mode</button>
 
   <script src="game.js"></script>
 </body>
